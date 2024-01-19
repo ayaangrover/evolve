@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Chat</title>
+    <style>
+        /* Add your CSS here */
+    </style>
+</head>
+<body>
+    <div id="chat">
+        <!-- Chat messages will go here -->
+    </div>
+    <input type="text" id="input" placeholder="Type a message...">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        function sendMessage() {
+            var input = document.getElementById('input');
+            var chat = document.getElementById('chat');
+            
+            // Display the user's message immediately
+            chat.innerHTML += '<p>You: ' + input.value + '</p>';
+
+            fetch('http://127.0.0.1:5000/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({message: input.value})
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                var url = URL.createObjectURL(blob);
+                var audio = new Audio(url);
+                audio.play();
+            });
+        }
+    </script>
+</body>
+</html>
