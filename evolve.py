@@ -7,8 +7,8 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-openai.api_key = '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'
-set_api_key("90e41a16a2d3cda9df9ff9b7dd41738c")
+openai.api_key = ''
+set_api_key("")
 
 @app.route('/message', methods=['POST'])
 def generate_city():
@@ -44,5 +44,5 @@ def generate_city():
 def audio():
     return send_file('audio.wav', mimetype='audio/wav')
 
-if __name__ == '__main__':
+if __name__ == '__main__':  
     app.run(host='0.0.0.0', port=5000)
