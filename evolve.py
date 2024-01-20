@@ -1,14 +1,12 @@
-from flask import Flask, jsonify, Response, send_file
-from flask_cors import CORS
+from flask import Flask, jsonify
 import openai
-from elevenlabs import generate, stream, set_api_key
-import os
+from flask_cors import CORS
+from flask import request
 
 app = Flask(__name__)
 CORS(app)
 
 openai.api_key = ''
-set_api_key("")
 
 @app.route('/message', methods=['POST'])
 def generate_city():
@@ -16,33 +14,13 @@ def generate_city():
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": user_message + " and also keep your response short, to simulate human conversation."}
+            {"role": "system", "content": "You are a helpful assistant who is simulating a conversation with a user. Keep your info short."},
+            {"role": "user", "content": user_message}
         ]
     )
   
     city = response.choices[0].message.content
+    return jsonify({'city': city})
 
-    def text_stream():
-        yield city
-
-    audio_stream = generate(
-        text=text_stream(),
-        voice="Nicole",
-        model="eleven_monolingual_v1",
-        stream=True
-    )
-
-    # Save the audio stream to a file
-    with open('audio.wav', 'wb') as f:
-        for chunk in audio_stream:
-            f.write(chunk)
-
-    # Return the text and the audio URL
-    return jsonify({'text': city, 'audio_url': 'http://127.0.0.1:5000/audio'})
-
-@app.route('/audio')
-def audio():
-    return send_file('audio.wav', mimetype='audio/wav')
-
-if __name__ == '__main__':  
+if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

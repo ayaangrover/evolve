@@ -20,7 +20,7 @@
             
             // Display the user's message immediately
             chat.innerHTML += '<p>You: ' + input.value + '</p>';
-
+    
             fetch('http://127.0.0.1:5000/message', {
                 method: 'POST',
                 headers: {
@@ -28,11 +28,11 @@
                 },
                 body: JSON.stringify({message: input.value})
             })
-            .then(response => response.blob())
-            .then(blob => {
-                var url = URL.createObjectURL(blob);
-                var audio = new Audio(url);
-                audio.play();
+            .then(response => response.json())
+            .then(data => {
+                // Display the AI's response when it's received from the server
+                chat.innerHTML += '<p>AI: ' + data.city + '</p>';
+                input.value = '';
             });
         }
     </script>
