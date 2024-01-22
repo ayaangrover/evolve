@@ -20,15 +20,15 @@
             
             // Display the user's message immediately
             chat.innerHTML += '<p>You: ' + input.value + '</p>';
-    
+
             fetch('https://c7f6c8b3-93ad-430c-84aa-b046bd58ba6e-00-20a9uwc76ekyt.worf.replit.dev/message', {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/x-www-form-urlencoded'  // Update this line
                 },
                 credentials: 'include',
-                body: JSON.stringify({message: input.value})
+                body: 'message=' + encodeURIComponent(input.value)  // Update this line
             })
             .then(response => response.json())
             .then(data => {
@@ -37,6 +37,7 @@
                 input.value = '';
             });
         }
+
     </script>
 </body>
 </html>
