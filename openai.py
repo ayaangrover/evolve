@@ -6,7 +6,7 @@ from flask import request
 app = Flask(__name__)
 CORS(app)
 
-openai.api_key = ''
+openai.api_key = os.environ.get('OPENAI')
 
 @app.route('/message', methods=['POST'])
 def generate_city():
