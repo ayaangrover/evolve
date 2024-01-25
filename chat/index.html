@@ -21,14 +21,14 @@
             // Display the user's message immediately
             chat.innerHTML += '<p>You: ' + input.value + '</p>';
 
-            fetch('https://c7f6c8b3-93ad-430c-84aa-b046bd58ba6e-00-20a9uwc76ekyt.worf.replit.dev/message', {
+            fetch('http://10.120.34.23:5000/message', {
                 method: 'POST',
-                mode: 'no-cors',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                credentials: 'include',
-                body: JSON.stringify({ message: input.value })  // Update this line
+                body: JSON.stringify({
+                    message: input.value
+                })
             })
             .then(response => response.json())
             .then(data => {

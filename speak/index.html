@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Chat</title>
+    <style>
+        /* Add your CSS here */
+    </style>
+</head>
+<body>
+    <div id="chat">
+        <!-- Chat messages will go here -->
+    </div>
+    <input type="text" id="input" placeholder="Type a message...">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        function sendMessage() {
+            var input = document.getElementById('input');
+            var chat = document.getElementById('chat');
+            
+            // Display the user's message immediately
+            chat.innerHTML += '<p>You: ' + input.value + '</p>';
+
+            fetch('http://localhost:5000/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({message: 'Hello, world!'})
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Log the generated text
+                console.log(data.city);
+
+                // Convert the base64 audio data to a Blob
+                var audioData = atob(data.audio);
+                var audioArray = new Uint8Array(audioData.length);
+                for (var i = 0; i < audioData.length; i++) {
+                    audioArray[i] = audioData.charCodeAt(i);
+                }
+                var audioBlob = new Blob([audioArray], {type: 'audio/wav'});
+
+                // Create an audio element and play the audio
+                var audioElement = document.createElement('audio');
+                audioElement.src = URL.createObjectURL(audioBlob);
+                audioElement.play();
+            })
+            .catch(error => console.error(error));
+        }
+    </script>
+</body>
+</html>

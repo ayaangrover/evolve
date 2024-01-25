@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        .circle {
+            background-color: #4CAF50;
+            /* Green */
+            border: none;
+            color: white;
+            text-align: center;
+            display: inline-block;
+            font-size: 16px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+        }
+
+        .circle:hover {
+            background-color: #45a049;
+        }
+
+        .circle:active {
+            background-color: #3e8e41;
+            box-shadow: 0 5px #666;
+            transform: translateY(4px);
+        }
+
+        .circle.grow {
+            width: 120px;
+            height: 120px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="chat"></div>
+    <button id="toggle" class="circle">Start</button>
+
+    <script>
+        // Create a new SpeechRecognition object
+        var recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition)();
+
+        recognition.lang = 'en-US';  // Set the language
+        recognition.interimResults = false;  // We want final results only
+        recognition.maxAlternatives = 1;  // We only want the best result
+
+        // Get the toggle button
+        var toggleButton = document.getElementById('toggle');
+
+        // Start or stop the speech recognition when the toggle button is clicked
+        toggleButton.onclick = function () {
+            if (toggleButton.textContent === 'Start') {
+                recognition.start();
+                toggleButton.classList.add('grow');
+                toggleButton.textContent = 'Stop';
+            } else {
+                recognition.stop();
+                toggleButton.classList.remove('grow');
+                toggleButton.textContent = 'Start';
+            }
+        };
+
+        recognition.onresult = function (event) {
+            // Get the transcript of the speech
+            var speechTranscript = event.results[0][0].transcript;
+
+            // Display the user's message immediately
+            var chat = document.getElementById('chat');
+            chat.innerHTML += '<p>You: ' + speechTranscript + '</p>';
+
+            // Send the transcript to the server
+            fetch('http://localhost:5000/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: speechTranscript })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Display the AI's message
+                    chat.innerHTML += '<p>AI: ' + data.city + '</p>';
+
+                    // Convert the base64 audio data to a Blob
+                    var audioData = atob(data.audio);
+                    var audioArray = new Uint8Array(audioData.length);
+                    for (var i = 0; i < audioData.length; i++) {
+                        audioArray[i] = audioData.charCodeAt(i);
+                    }
+                    var audioBlob = new Blob([audioArray], { type: 'audio/wav' });
+
+                    // Create an audio element and play the audio
+                    var audioElement = document.createElement('audio');
+                    audioElement.src = URL.createObjectURL(audioBlob);
+                    audioElement.play();
+                })
+                .catch(error => console.error(error));
+        };
+
+        recognition.onerror = function (event) {
+            console.error('Error occurred in recognition: ' + event.error);
+        };
+
+        recognition.onend = function () {
+            toggleButton.textContent = 'Start';
+            toggleButton.classList.remove('grow');
+        };
+    </script>
+</body>
+
+</html>
