@@ -21,7 +21,7 @@
             // Display the user's message immediately
             chat.innerHTML += '<p>You: ' + input.value + '</p>';
 
-            fetch('http://10.120.34.23:5000/message', {
+            fetch('http://127.0.0.1:5000/message', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

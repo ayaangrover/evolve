@@ -1,51 +1,54 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS  # Import the flask_cors module
-import openai
+from flask_cors import CORS
+from flask import Flask, request, jsonify, send_file
 from elevenlabs.simple import generate
-import base64
+import openai
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS
+CORS(app)
 
-openai.api_key = ''  # Replace with your actual OpenAI API key
+openai.api_key = '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'  # replace with your OpenAI API key
+
+# This will act as our "memory"
+memory = []
 
 @app.route('/message', methods=['POST'])
 def generate_city():
-    try:
-        user_message = request.json['message']
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": user_message}
-            ]
-        )
-  
-        city = response.choices[0].message.content
+    user_message = request.json['message']
 
-        # Generate audio from the generated text
-        audio = generate(
-            text=city,
-            voice="Giovanni",  # Replace with the correct voice name
-            model="eleven_turbo_v2"
-        )
+    # Add the user's message to the memory
+    memory.append({"role": "user", "content": user_message})
 
-        # Convert the audio data to a base64 string
-        audio_base64 = base64.b64encode(audio).decode('utf-8')
+    # Generate a list of messages for the chat model, starting with the system message
+    messages = [
+        {"role": "system", "content": "You are a helpful assistant."},
+    ] + memory
 
-        # Return the generated text and audio
-        return jsonify({'city': city, 'audio': audio_base64})
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=messages
+    )
 
-    except Exception as e:
-        return jsonify({'error': 'Exception occurred', 'message': str(e)}), 500
+    # Add the AI's response to the memory
+    ai_message = response.choices[0].message.content
+    memory.append({"role": "assistant", "content": ai_message})
 
-@app.errorhandler(400)
-def bad_request(e):
-    return jsonify({'error': 'Bad request', 'message': str(e)}), 400
+    # Generate voice from the AI's response
+    voice_response = generate(
+        model="eleven_turbo_v2",
+        voice="Giovanni",
+        text=ai_message  # replace with your ElevenLabs API key
+    )
 
-@app.errorhandler(500)
-def internal_error(e):
-    return jsonify({'error': 'Internal Server Error', 'message': str(e)}), 500
+    # Save the voice response to a file
+    filename = 'voice_response.wav'
+    with open(filename, 'wb') as f:
+        f.write(voice_response)
+
+    return jsonify({'city': ai_message, 'audio': filename})
+
+@app.route('/audio/<filename>', methods=['GET'])
+def get_audio(filename):
+    return send_file(filename, mimetype='audio/wav')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

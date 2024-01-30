@@ -1,53 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AI Chat</title>
-    <style>
-        /* Add your CSS here */
-    </style>
+    <title>Chat</title>
 </head>
 <body>
-    <div id="chat">
-        <!-- Chat messages will go here -->
-    </div>
-    <input type="text" id="input" placeholder="Type a message...">
-    <button onclick="sendMessage()">Send</button>
+    <div id="chat"></div>
+    <input id="input" type="text">
+    <button id="button">Send</button>
+    <audio id="audio"></audio>
 
     <script>
-        function sendMessage() {
+        document.getElementById('button').addEventListener('click', function(event) {
+            event.preventDefault();
             var input = document.getElementById('input');
             var chat = document.getElementById('chat');
+            var audio = document.getElementById('audio');
             
             // Display the user's message immediately
             chat.innerHTML += '<p>You: ' + input.value + '</p>';
 
-            fetch('http://localhost:5000/message', {
+            fetch('http://127.0.0.1:5000/message', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({message: 'Hello, world!'})
+                body: JSON.stringify({
+                    message: input.value
+                })
             })
             .then(response => response.json())
             .then(data => {
-                // Log the generated text
-                console.log(data.city);
+                // Display the AI's response when it's received from the server
+                chat.innerHTML += '<p>AI: ' + data.city + '</p>';
 
-                // Convert the base64 audio data to a Blob
-                var audioData = atob(data.audio);
-                var audioArray = new Uint8Array(audioData.length);
-                for (var i = 0; i < audioData.length; i++) {
-                    audioArray[i] = audioData.charCodeAt(i);
-                }
-                var audioBlob = new Blob([audioArray], {type: 'audio/wav'});
+                // Play the audio response
+                audio.src = 'http://127.0.0.1:5000/audio/' + data.audio;
+                audio.play();
 
-                // Create an audio element and play the audio
-                var audioElement = document.createElement('audio');
-                audioElement.src = URL.createObjectURL(audioBlob);
-                audioElement.play();
-            })
-            .catch(error => console.error(error));
-        }
+                input.value = '';
+            });
+        });
     </script>
 </body>
 </html>
