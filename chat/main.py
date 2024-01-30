@@ -5,7 +5,7 @@ import openai
 app = Flask(__name__)
 CORS(app)
 
-openai.api_key = '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'
+openai.api_key = ''
 
 # This will act as our "memory"
 memory = []
